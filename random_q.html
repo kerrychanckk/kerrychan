@@ -93,13 +93,21 @@
         function showQuestion() {
             const questionContainer = document.getElementById('question-container');
             const currentQuestion = currentQuestions[currentQuestionIndex];
-            const shuffledOptions = currentQuestion.options.sort(() => 0.5 - Math.random());
+            const shuffledOptions = shuffleArray(currentQuestion.options);
             questionContainer.innerHTML = `
                 <div class="question">${currentQuestion.question}</div>
                 <ul class="options">
                     ${shuffledOptions.map(option => `<li><button onclick="selectOption('${option}')">${option}</button></li>`).join('')}
                 </ul>
             `;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
         }
 
         function selectOption(selectedOption) {
