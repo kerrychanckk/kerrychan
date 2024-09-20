@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .question {
+            margin: 20px 0;
+        }
+
+        .options {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .options li {
+            margin: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        .dropzone {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            background-color: #e0e0e0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Online Quiz</h1>
+        <div id="start-screen">
+            <label for="name">Enter your name:</label>
+            <input type="text" id="name" required>
+            <button onclick="startQuiz()">Start Quiz</button>
+        </div>
+        <div id="quiz-screen" class="hidden">
+            <div id="question-container"></div>
+            <div class="dropzone" id="dropzone">Drop your answer here</div>
+            <button onclick="nextQuestion()">Next</button>
+        </div>
+        <div id="result-screen" class="hidden">
+            <h2 id="score"></h2>
+            <button onclick="playAgain()">Play Again</button>
+        </div>
+    </div>
+    <script>
+        const questions = [
+            { question: "What is 1+1?", options: ["1", "2", "3", "4"], answer: "2" },
+            { question: "What is 2+2?", options: ["2", "3", "4", "5"], answer: "4" },
+            { question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
+            { question: "What is the largest planet?", options: ["Earth", "Mars", "Jupiter", "Saturn"], answer: "Jupiter" },
+            { question: "What is the boiling point of water?", options: ["90°C", "100°C", "110°C", "120°C"], answer: "100°C" },
+            { question: "What is the square root of 16?", options: ["2", "4", "6", "8"], answer: "4" },
+            { question: "Who wrote 'To Kill a Mockingbird'?", options: ["Harper Lee", "Mark Twain", "Ernest Hemingway", "F. Scott Fitzgerald"], answer: "Harper Lee" }
+        ];
+
+        let playerName = "";
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function startQuiz() {
+            playerName = document.getElementById('name').value;
+            if (playerName.trim() === "") {
+                alert("Please enter your name.");
+                return;
+            }
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            currentQuestions = getRandomQuestions(5);
+            currentQuestionIndex = 0;
+            score = 0;
+            showQuestion();
+        }
+
+        function getRandomQuestions(num) {
+            const shuffled = questions.sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, num);
+        }
+
+        function showQuestion() {
+            const questionContainer = document.getElementById('question-container');
+            const currentQuestion = currentQuestions[currentQuestionIndex];
+            const shuffledOptions = shuffleArray(currentQuestion.options);
+            questionContainer.innerHTML = `
+                <div class="question">${currentQuestion.question}</div>
+                <ul class="options">
+                    ${shuffledOptions.map(option => `<li draggable="true" ondragstart="drag(event)" id="${option}">${option}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.id);
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const data = event.dataTransfer.getData("text");
+            const selectedOption = document.getElementById(data).textContent;
+            if (selectedOption === currentQuestions[currentQuestionIndex].answer) {
+                score++;
+            }
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('score').textContent = `${playerName}, your score is ${score}/${currentQuestions.length}`;
+        }
+
+        function playAgain() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('name').value = "";
+        }
+
+        document.getElementById('dropzone').addEventListener('dragover', allowDrop);
+        document.getElementById('dropzone').addEventListener('drop', drop);
+    </script>
+</body>
+</html>
